@@ -259,5 +259,53 @@ alter table tbEndereco add foreign key Fk_IdCid_TbEndereco(IdCid) references tbC
 
 <b>Exercício 9:</b>
 ```
-Não upado.
+
+/*Exercício 9*/
+create database db_banco;
+use db_banco;
+
+create table tbCliente(
+CPF bigint PRIMARY KEY,
+Nome varchar(50) not null,
+Sexo char(1) not null,
+Endereco varchar(50) not null
+);
+
+create table tbConta(
+NumeroConta int PRIMARY KEY,
+Saldo decimal(7, 2) null,
+TipoConta smallint not null,
+NumAgencia int not null /*fk*/ 
+);
+
+create table tbHistorico(
+CPF bigint null,
+foreign key (CPF) references tbCliente(CPF),
+NumeroConta int null,
+foreign key (NumeroConta) references tbConta(NumeroConta),
+DataInicio date null
+);
+
+create table tbTelefone_Cliente(
+Telefone int PRIMARY KEY,
+CPF bigint null,
+foreign key (CPF) references tbCliente(CPF)
+);
+
+create table tbAgencia(
+NumeroAgencia int PRIMARY KEY,
+CodBanco int null, /*fk*/
+Endereco varchar(50) not null
+);
+
+alter table tbConta add foreign key (NumAgencia) references tbAgencia(NumeroAgencia);
+
+create table tbBanco(
+Codigo int PRIMARY KEY,
+Nome varchar(50) not null
+);
+
+alter table tbAgencia add foreign key (CodBanco) references tbBanco(Codigo);
+
+show tables;
 ```

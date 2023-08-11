@@ -309,3 +309,114 @@ alter table tbAgencia add foreign key (CodBanco) references tbBanco(Codigo);
 
 show tables;
 ```
+
+<b>Exercício 11</b>
+```
+create database dbdis;
+use dbdis;
+
+create table tbCliente(
+	Id int primary key auto_increment,
+	NomeCli varchar(200) not null,
+    NumEnd decimal(6,0) not null,
+    CompEnd varchar(50) null,
+    CepCli decimal(8,0) not null
+);
+
+create table tbClientePF(
+	CPF decimal(11,0) unique primary key,
+    RG decimal(9,0) not null,
+    RG_dig char(1) not null,
+    Nasc date not null
+);
+
+create table tbClientePJ(
+	CNPJ decimal(9,0) unique primary key,
+    IE decimal (11,0) unique
+);
+
+create table tbEndereco(
+	Logradouro varchar(200) not null,
+    CEP decimal(8,0) primary key,
+    BairroId int not null,
+    foreign key (BairroId) references tbBairro(BairroId),
+    CidadeId int not null,
+    foreign key (CidadeId) references tbCidade(CidadeId),
+    UFId int not null,
+    foreign key (UFId) references tbEstado(UFId)
+);
+describe tbEndereco;
+create table tbBairro(
+	BairroId int primary key auto_increment,
+    Bairro varchar(200) not null
+);
+
+create table tbCidade(
+	CidadeId int primary key auto_increment,
+    Cidade varchar(200) not null
+);
+
+create table tbEstado(
+	UFId int primary key auto_increment,
+    UF char(2) not null
+);
+
+create table tbFornecedor(
+	Codigo int primary key auto_increment,
+    CNPJ decimal(14,0) unique,
+    Nome varchar(200) not null,
+    Telefone decimal(11,0) null
+);
+
+create table tbProduto(
+	CodigoBarras decimal(14,0) unique primary key,
+    Nome varchar(200) not null,
+    Valor decimal(8,2) not null,
+    Qtd int null
+);
+
+/*não executado ainda por ter pk*/
+create table tbCompra(
+	NotaFiscal int primary key,
+    DataCompra date not null,
+    ValorTotal decimal(8,2) not null,
+    QtdCompra int not null,
+    Codigo int null,
+    foreign key (Codigo) references tbFornecedor(Codigo)
+);
+
+show tables;
+create table tbItemCompra(
+	NotaFiscal int not null,
+    foreign key (NotaFiscal) references tbCompra(NotaFiscal),
+    CodigoBarras decimal(14,0) not null,
+    foreign key (CodigoBarras) references tbProduto(CodigoBarras),
+    ValorItem decimal(8,2) not null,
+    Qtd int not null
+);
+
+create table tbVenda(
+	NumeroVenda int primary key,
+    DataVenda date not null,
+    TotalVenda decimal(8,2) not null,
+    Id_Cli int not null,
+    foreign key (Id_Cli) references tbCliente(Id),
+    NF int null,
+    foreign key (NF) references tbNota_Fiscal(NF)
+);
+
+create table tbItemVenda(
+	NumeroVenda int not null,
+    foreign key (NumeroVenda) references tbVenda(NumeroVenda),
+    CodigoBarras decimal(14,0) not null,
+    foreign key (CodigoBarras) references tbProduto(CodigoBarras),
+	ValorItem decimal(8,2) not null,
+    Qtd int  not null
+);
+
+create table tbNota_Fiscal(
+	NF int primary key,
+    TotalNota decimal(8,2),
+    DataEmissao date not null
+);
+```

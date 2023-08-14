@@ -320,19 +320,24 @@ create table tbCliente(
 	NomeCli varchar(200) not null,
     NumEnd decimal(6,0) not null,
     CompEnd varchar(50) null,
-    CepCli decimal(8,0) not null
+    CepCli decimal(8,0) not null, 
+    foreign key (CepCli) references tbEndereco(CEP)
 );
 
 create table tbClientePF(
 	CPF decimal(11,0) unique primary key,
     RG decimal(9,0) not null,
     RG_dig char(1) not null,
-    Nasc date not null
+    Nasc date not null,
+    Id int not null auto_increment,
+    foreign key (Id) references tbCliente(Id)
 );
 
 create table tbClientePJ(
 	CNPJ decimal(9,0) unique primary key,
-    IE decimal (11,0) unique
+    IE decimal (11,0) unique,
+    Id int not null auto_increment,
+    foreign key (Id) references tbCliente(Id) 
 );
 
 create table tbEndereco(
@@ -345,7 +350,7 @@ create table tbEndereco(
     UFId int not null,
     foreign key (UFId) references tbEstado(UFId)
 );
-describe tbEndereco;
+
 create table tbBairro(
 	BairroId int primary key auto_increment,
     Bairro varchar(200) not null
@@ -375,7 +380,6 @@ create table tbProduto(
     Qtd int null
 );
 
-/*não executado ainda por ter pk*/
 create table tbCompra(
 	NotaFiscal int primary key,
     DataCompra date not null,
@@ -385,7 +389,6 @@ create table tbCompra(
     foreign key (Codigo) references tbFornecedor(Codigo)
 );
 
-show tables;
 create table tbItemCompra(
 	NotaFiscal int not null,
     foreign key (NotaFiscal) references tbCompra(NotaFiscal),
@@ -419,4 +422,7 @@ create table tbNota_Fiscal(
     TotalNota decimal(8,2),
     DataEmissao date not null
 );
+
+show tables;
+describe tbEndereco;
 ```

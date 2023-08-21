@@ -425,4 +425,87 @@ create table tbNota_Fiscal(
 
 show tables;
 describe tbEndereco;
+
+insert into tbFornecedor values
+(default, '1245678937123', 'Revenda Chico Loco', '11934567897'),
+(default, '1345678937123', 'José Faz Tudo S/A', '11934567898'),
+(default, '1445678937123', 'Vatolodo Entregas', '11934567899'),
+(default, '1545678937123', 'Astrogildo das Estrela', '11934567800'),
+(default, '1645678937123', 'Amoroso Doce', '11934567801'),
+(default, '1745678937123', 'Marcelo Dedal', '11934567802'),
+(default, '1845678937123', 'Franciscano Cachaça', '11934567803'),
+(default, '1945678937123', 'Joãozinho Chupeta','11934567804');
+
+select * from tbFornecedor;
+
+delimiter $$
+create procedure spInsertCity (vCidade varchar(200))
+begin
+insert into tbCidade(Cidade)
+			  values(vCidade);
+end $$
+
+call spInsertCity ('Rio de Janeiro');
+call spInsertCity ('São Carlos');
+call spInsertCity ('Campinas');
+call spInsertCity ('Franco da Rocha');
+call spInsertCity ('Osasco');
+call spInsertCity ('Pirituba');
+call spInsertCity ('Lapa');
+call spInsertCity ('Ponta Grossa');
+
+select * from tbCidade;
+
+delimiter $$
+create procedure spInsertUf (vUF char(2))
+begin
+	insert into tbEstado(UF)
+				 values(vUF);
+
+end $$
+
+call spInsertUf ('SP');
+call spInsertUf ('RJ');
+call spInsertUf ('RS');
+
+select * from tbEstado;
+
+delimiter $$
+create procedure spInsertBairro (vBairro varchar(200))
+begin
+	insert into tbBairro(Bairro)
+				 values(vBairro);
+end $$
+
+call spInsertBairro ('Aclimação');
+call spInsertBairro ('Capão Redondo');
+call spInsertBairro ('Pirituba');
+call spInsertBairro ('Liberdade');
+
+select * from tbBairro;
+
+delimiter $$
+create procedure spInsertProduto (vCB decimal(14,0), vNome varchar(200), vValor decimal(8,2), vQtd int)
+begin
+	insert into tbProduto(CodigoBarras, Nome, Valor, Qtd)
+                          values(vCB,vNome, vValor, vQtd);
+end $$
+
+call spInsertProduto ('12345678910111', 'Rei do Papel Mache', '54.61', 120 );
+call spInsertProduto ('12345678910112', 'Bolinha de Sabão', '100.45', 120 );
+call spInsertProduto ('12345678910113', 'Carro Bate', '44.00', 120 );
+call spInsertProduto ('12345678910114', 'Bola Furada', '10.00', 120 );
+call spInsertProduto ('12345678910115', 'Maçã Laranja', '99.44', 120 );
+call spInsertProduto ('12345678910116', 'Boneco do Hitler', '124.00', 200 );
+call spInsertProduto ('12345678910117', 'Farinha de Suruí', '50.00', 200 );
+call spInsertProduto ('12345678910118', 'Zelador de Cemitério', '24.50', 100 );
+
+select * from tbProduto;
+
+delimiter $$
+create procedure spInsertEnd (vLogra varchar(200), vCEP decimal(8,0), vBairro int, vCidade int, vUFId int)
+begin
+	
+
+end $$
 ```

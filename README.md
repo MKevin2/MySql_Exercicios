@@ -320,8 +320,7 @@ create table tbCliente(
 	NomeCli varchar(200) not null,
     NumEnd decimal(6,0) not null,
     CompEnd varchar(50) null,
-    CepCli decimal(8,0) not null, 
-    foreign key (CepCli) references tbEndereco(CEP)
+    CepCli int not null
 );
 
 create table tbClientePF(
@@ -329,26 +328,21 @@ create table tbClientePF(
     RG decimal(9,0) not null,
     RG_dig char(1) not null,
     Nasc date not null,
-    Id int not null auto_increment,
-    foreign key (Id) references tbCliente(Id)
+    Id int not null
 );
 
 create table tbClientePJ(
 	CNPJ decimal(9,0) unique primary key,
     IE decimal (11,0) unique,
-    Id int not null auto_increment,
-    foreign key (Id) references tbCliente(Id) 
+    Id int not null
 );
 
 create table tbEndereco(
 	Logradouro varchar(200) not null,
     CEP decimal(8,0) primary key,
     BairroId int not null,
-    foreign key (BairroId) references tbBairro(BairroId),
     CidadeId int not null,
-    foreign key (CidadeId) references tbCidade(CidadeId),
-    UFId int not null,
-    foreign key (UFId) references tbEstado(UFId)
+    UFId int not null
 );
 
 create table tbBairro(
@@ -385,15 +379,13 @@ create table tbCompra(
     DataCompra date not null,
     ValorTotal decimal(8,2) not null,
     QtdCompra int not null,
-    Codigo int null,
-    foreign key (Codigo) references tbFornecedor(Codigo)
+    Codigo int null
 );
 
+#criar ainda
 create table tbItemCompra(
 	NotaFiscal int not null,
-    foreign key (NotaFiscal) references tbCompra(NotaFiscal),
     CodigoBarras decimal(14,0) not null,
-    foreign key (CodigoBarras) references tbProduto(CodigoBarras),
     ValorItem decimal(8,2) not null,
     Qtd int not null
 );
@@ -403,16 +395,12 @@ create table tbVenda(
     DataVenda date not null,
     TotalVenda decimal(8,2) not null,
     Id_Cli int not null,
-    foreign key (Id_Cli) references tbCliente(Id),
-    NF int null,
-    foreign key (NF) references tbNota_Fiscal(NF)
+    NF int null
 );
 
 create table tbItemVenda(
 	NumeroVenda int not null,
-    foreign key (NumeroVenda) references tbVenda(NumeroVenda),
     CodigoBarras decimal(14,0) not null,
-    foreign key (CodigoBarras) references tbProduto(CodigoBarras),
 	ValorItem decimal(8,2) not null,
     Qtd int  not null
 );
@@ -423,6 +411,46 @@ create table tbNota_Fiscal(
     DataEmissao date not null
 );
 
+#adicionando as FK
+ALTER TABLE tbCliente ADD CONSTRAINT fk_cepcli
+FOREIGN KEY (CepCli) REFERENCES tbFornecedor(Codigo);
+
+ALTER TABLE tbClientePF ADD CONSTRAINT fk_idclipf
+FOREIGN KEY (Id) REFERENCES tbCliente(Id);
+
+ALTER TABLE tbClientePJ ADD CONSTRAINT fk_idclipj
+FOREIGN KEY (Id) REFERENCES tbCliente(Id);
+
+ALTER TABLE tbEndereco ADD CONSTRAINT fk_endbairro
+FOREIGN KEY (BairroId) REFERENCES tbBairro(BairroId);
+
+ALTER TABLE tbEndereco ADD CONSTRAINT fk_endcid
+FOREIGN KEY (CidadeId) REFERENCES tbCidade(CidadeId);
+
+ALTER TABLE tbEndereco ADD CONSTRAINT fk_enduf
+FOREIGN KEY (UFId) REFERENCES tbEstado(UFId);
+
+ALTER TABLE tbCompra ADD CONSTRAINT fk_compra
+FOREIGN KEY (Codigo) REFERENCES tbFornecedor(Codigo);
+
+ALTER TABLE tbItemCompra ADD CONSTRAINT fk_itemcompra
+FOREIGN KEY (NotaFiscal) REFERENCES tbCompra(NotaFiscal);
+
+ALTER TABLE tbItemCompra ADD CONSTRAINT fk_itemcomprabarras
+FOREIGN KEY (CodigoBarras) REFERENCES tbProduto(CodigoBarras);
+
+ALTER TABLE tbVenda ADD CONSTRAINT fk_vendacli
+FOREIGN KEY (Id_Cli) REFERENCES tbCliente(Id);
+
+ALTER TABLE tbVenda ADD CONSTRAINT fk_vendanf
+FOREIGN KEY (NF) REFERENCES tbNota_Fiscal(NF);
+
+ALTER TABLE tbItemVenda ADD CONSTRAINT fk_itemvendanum
+FOREIGN KEY (NumeroVenda) REFERENCES tbVenda(NumeroVenda);
+
+ALTER TABLE tbItemVenda ADD CONSTRAINT fk_itemvendacodba
+FOREIGN KEY (CodigoBarras) REFERENCES tbProduto(CodigoBarras);
+   
 show tables;
 describe tbEndereco;
 
@@ -502,55 +530,26 @@ call spInsertProduto ('12345678910118', 'Zelador de Cemitério', '24.50', 100 );
 
 select * from tbProduto;
 
-delimiter $$
-create procedure spInsertEnd (vLogra varchar(200), vCEP decimal(8,0), vBairro int, vCidade int, vUFId int)
+delimiter &&
+create procedure spInsertEndereco (vLogradouro varchar (200), vBairro varchar (200), vUf char (2), vCEP decimal (11,0), vCidade varchar (200))
 begin
-	
+     IF NOT EXISTS (SELECT Bairro FROM tbBairro where Bairro = vBairro) THEN
+		insert into tbBairro (Bairro)
+		values (vBairro);
+     END IF;
+     
+     IF NOT EXISTS (SELECT UF FROM tbEstado where UF = vUF) THEN
+		insert into tbEstado (UF)
+        values (vUF);
+     END IF;
 
-end $$
+     IF NOT EXISTS (SELECT Cidade FROM tbCidade where Cidade = vCidade) THEN
+		insert into tbCidade(Cidade)
+        values (vCidade);
+     END IF;
+     
+	insert into tbendereco (Logradouro, Bairro, Cidade, UF, CEP) 
+	values (vLogradouro, (SELECT Bairroid FROM tbBairro where Bairro = vBairro), (SELECT Cidadeid FROM tbCidade where Cidade = vCidade), (SELECT UFid FROM tbEstado where UF = vUF), vCEP);
+
+end &&
 ```
-
-public class Cliente
-{
-    [Display(Name = "Nome do Usuário")]
-    [Required(ErrorMessage = "Por favor, preencha o Nome.")]
-    [MaxLengthAttribute(70)]
-    public string Nome { get; set; }
-    
-    [Display(Name = "Seu Endereço")]
-    [Required(ErrorMessage = "Por favor, preencha o Endereço.")]
-    public string End { get; set; }
-
-    //11980987558 - (11 caracteres)
-    [Display(Name = "Seu Telefone")]
-    [Required(ErrorMessage = "Por favor, preencha o campo Telefone.")]
-    [MaxLengthAttribute(11)]
-    public string Tel { get; set; }
-
-    [RegularExpressions(@"\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*")]
-    [Display(Name = "Campo E-mail")]
-    [Required(ErrorMessage = "Por favor, preencha o campo E-mail corretamente.")]
-    public string Email { get; set; }
-
-    [Display(Name = "Campo CPF")]
-    [Required(ErrorMessage = "Por favor, preencha o CPF.")]
-    public double CPF { get; set; }
-
-    [Display(Name = "Data de Nascimento")]
-    [Required(ErrorMessage = "Por favor, preencha a Data de Nascimento.")]
-    [DataType(DataType.Date)]
-    [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy HH:mm}", ApplyFormatInEditMode = true)]
-    public DateTime DateNasc { get; set; }
-
-    /*
-    Atributos: 
-        Codigo do cliente,
-        Nome,
-        Endereço,
-        Telefone com DDD,
-        Email,
-        CPF, 
-        Data de Nascimento,   
-        Pra usar RegularExpreesions e DataAnotation
-    */
-}

@@ -314,13 +314,12 @@ show tables;
 ```
 create database dbdis;
 use dbdis;
-
 create table tbCliente(
 	Id int primary key auto_increment,
 	NomeCli varchar(200) not null,
     NumEnd decimal(6,0) not null,
     CompEnd varchar(50) null,
-    CepCli int not null
+    CepCli numeric(8) not null
 );
 
 create table tbClientePF(
@@ -410,46 +409,32 @@ create table tbNota_Fiscal(
     TotalNota decimal(8,2),
     DataEmissao date not null
 );
+#alter
+ALTER TABLE tbCliente ADD FOREIGN KEY (CepCli) REFERENCES tbEndereco(CEP);
 
-#adicionando as FK
-ALTER TABLE tbCliente ADD CONSTRAINT fk_cepcli
-FOREIGN KEY (CepCli) REFERENCES tbFornecedor(Codigo);
+ALTER TABLE tbClientePF ADD FOREIGN KEY (Id) REFERENCES tbCliente(Id);
 
-ALTER TABLE tbClientePF ADD CONSTRAINT fk_idclipf
-FOREIGN KEY (Id) REFERENCES tbCliente(Id);
+ALTER TABLE tbClientePJ ADD FOREIGN KEY (Id) REFERENCES tbCliente(Id);
 
-ALTER TABLE tbClientePJ ADD CONSTRAINT fk_idclipj
-FOREIGN KEY (Id) REFERENCES tbCliente(Id);
+ALTER TABLE tbEndereco ADD FOREIGN KEY (BairroId) REFERENCES tbBairro(BairroId);
 
-ALTER TABLE tbEndereco ADD CONSTRAINT fk_endbairro
-FOREIGN KEY (BairroId) REFERENCES tbBairro(BairroId);
+ALTER TABLE tbEndereco ADD FOREIGN KEY (CidadeId) REFERENCES tbCidade(CidadeId);
 
-ALTER TABLE tbEndereco ADD CONSTRAINT fk_endcid
-FOREIGN KEY (CidadeId) REFERENCES tbCidade(CidadeId);
+ALTER TABLE tbEndereco ADD FOREIGN KEY (UFId) REFERENCES tbEstado(UFId);
 
-ALTER TABLE tbEndereco ADD CONSTRAINT fk_enduf
-FOREIGN KEY (UFId) REFERENCES tbEstado(UFId);
+ALTER TABLE tbCompra ADD FOREIGN KEY (Codigo) REFERENCES tbFornecedor(Codigo);
 
-ALTER TABLE tbCompra ADD CONSTRAINT fk_compra
-FOREIGN KEY (Codigo) REFERENCES tbFornecedor(Codigo);
+ALTER TABLE tbItemCompra ADD FOREIGN KEY (NotaFiscal) REFERENCES tbCompra(NotaFiscal);
 
-ALTER TABLE tbItemCompra ADD CONSTRAINT fk_itemcompra
-FOREIGN KEY (NotaFiscal) REFERENCES tbCompra(NotaFiscal);
+ALTER TABLE tbItemCompra ADD FOREIGN KEY (CodigoBarras) REFERENCES tbProduto(CodigoBarras);
 
-ALTER TABLE tbItemCompra ADD CONSTRAINT fk_itemcomprabarras
-FOREIGN KEY (CodigoBarras) REFERENCES tbProduto(CodigoBarras);
+ALTER TABLE tbVenda ADD FOREIGN KEY (Id_Cli) REFERENCES tbCliente(Id);
 
-ALTER TABLE tbVenda ADD CONSTRAINT fk_vendacli
-FOREIGN KEY (Id_Cli) REFERENCES tbCliente(Id);
+ALTER TABLE tbVenda ADD FOREIGN KEY (NF) REFERENCES tbNota_Fiscal(NF);
 
-ALTER TABLE tbVenda ADD CONSTRAINT fk_vendanf
-FOREIGN KEY (NF) REFERENCES tbNota_Fiscal(NF);
+ALTER TABLE tbItemVenda ADD FOREIGN KEY (NumeroVenda) REFERENCES tbVenda(NumeroVenda);
 
-ALTER TABLE tbItemVenda ADD CONSTRAINT fk_itemvendanum
-FOREIGN KEY (NumeroVenda) REFERENCES tbVenda(NumeroVenda);
-
-ALTER TABLE tbItemVenda ADD CONSTRAINT fk_itemvendacodba
-FOREIGN KEY (CodigoBarras) REFERENCES tbProduto(CodigoBarras);
+ALTER TABLE tbItemVenda ADD FOREIGN KEY (CodigoBarras) REFERENCES tbProduto(CodigoBarras);
    
 show tables;
 describe tbEndereco;
@@ -512,6 +497,7 @@ call spInsertBairro ('Liberdade');
 
 select * from tbBairro;
 
+#Exercicio 5
 delimiter $$
 create procedure spInsertProduto (vCB decimal(14,0), vNome varchar(200), vValor decimal(8,2), vQtd int)
 begin
@@ -530,26 +516,134 @@ call spInsertProduto ('12345678910118', 'Zelador de Cemitério', '24.50', 100 );
 
 select * from tbProduto;
 
+#Exercicio 6
 delimiter &&
-create procedure spInsertEndereco (vLogradouro varchar (200), vBairro varchar (200), vUf char (2), vCEP decimal (11,0), vCidade varchar (200))
+create procedure spInsertEnderecooo (vLogradouro varchar (200), vBairro varchar (200), vCidade varchar (200), vUf char (2), vCEP decimal (11,0))
 begin
-     IF NOT EXISTS (SELECT Bairro FROM tbBairro where Bairro = vBairro) THEN
+     if not exists (select Bairro from tbBairro where Bairro = vBairro) then
 		insert into tbBairro (Bairro)
 		values (vBairro);
-     END IF;
+     end if;
      
-     IF NOT EXISTS (SELECT UF FROM tbEstado where UF = vUF) THEN
+     if not exists (select UF from tbEstado where UF = vUF) then
 		insert into tbEstado (UF)
         values (vUF);
-     END IF;
+     end if;
 
-     IF NOT EXISTS (SELECT Cidade FROM tbCidade where Cidade = vCidade) THEN
+     if not exists (select Cidade from tbCidade where Cidade = vCidade) then
 		insert into tbCidade(Cidade)
         values (vCidade);
-     END IF;
+     end if;
      
-	insert into tbendereco (Logradouro, Bairro, Cidade, UF, CEP) 
-	values (vLogradouro, (SELECT Bairroid FROM tbBairro where Bairro = vBairro), (SELECT Cidadeid FROM tbCidade where Cidade = vCidade), (SELECT UFid FROM tbEstado where UF = vUF), vCEP);
+	insert into tbendereco (Logradouro, BairroId, CidadeId, UFId, CEP) 
+	values (vLogradouro, (select Bairroid from tbBairro where Bairro = vBairro), (select Cidadeid from tbCidade where Cidade = vCidade), (select UFid from tbEstado where UF = vUF), vCEP);
 
 end &&
+
+call spInsertEnderecooo ("Rua da Federal","Lapa","São Paulo","SP","12345050");
+call spInsertEnderecooo ("Av Brasil","Lapa","Campinas","SP","12345051");
+call spInsertEnderecooo ("Rua Liberdade","Consolação","São Paulo","SP","12345053");
+call spInsertEnderecooo ("Av Paulista","Penha","Rio de Janeiro","RJ","12345054");
+call spInsertEnderecooo ("Rua Ximbu","Penha","Rio de Janeiro","RJ","12345055");
+call spInsertEnderecooo ("Rua Piu X1","Penha","Campinas","SP","12345056");
+call spInsertEnderecooo ("Rua Chocolate","Aclimação","Barra Mansa","RS","12345057");
+call spInsertEnderecooo ("Rua Pão na Chá","Barra Funda","Ponta Grossa","RS","12345058");
+
+select * from tbEndereco;
+
+#Exercicio 7
+delimiter &&
+create procedure spInsertClienteEx7(vNomeCli varchar(200), vNumEnd smallint, vCompEnd varchar(50), vCepCli decimal(8,0))
+begin
+	insert into tbCliente(NomeCli, NumEnd, CompEnd, CepCli)
+				values(vNomeCli, vNumEnd, vCompEnd, vCepCli);
+end &&
+
+delimiter &&
+create procedure spInsertClientePFEx7(vCpf decimal(11,0), vRg decimal(9,0), vRg_dig char(1), vNasc date, vId int)
+begin
+	insert into tbClientePF(CPF, RG, RG_Dig, Nasc, ID)
+				values(vCpf, vRg, vRg_dig, vNasc, vId);
+end &&
+
+call spInsertClienteEx7('Pimpão', 325, null, 12345051);
+call spInsertClientePFEx7(12345678911, 12345678, 0, '2000-10-12', 1);
+select * from tbClientePF;
+
+call spInsertClienteEx7('Disney Chaplin', 89, 'Ap. 12', 12345053);
+call spInsertClientePFEx7(12345678912, 12345679, 0, '2001-11-21', 2);
+
+call spInsertClienteEx7('Marciano', 744, null, 12345054);
+call spInsertClientePFEx7(12345678913, 12345680, 0, '2001-06-01', 3);
+
+call spInsertEnderecooo ("Rua Veia","Jardim Santa Isabel","Cuiabá","MT","12345059");
+call spInsertClienteEx7('Lança Perfume', 1284, null, 12345059);
+
+call spInsertClienteEx7('Remédio Amargo', 2585, null, 12345058);
+call spInsertClientePFEx7(12345678914, 12345681, 'X', '2004-04-05', 4);
+call spInsertClientePFEx7(12345678915, 12345682, 0, '2002-07-15', 5);
+
+select * from tbCliente;
+select * from tbClientePF;
+select * from tbEndereco;
+
+#Exercicio 8
+call spInsertEnderecooo('Rua dos Amores', 'Sei Lá', 'Recife', 'PE', 12345060);
+delimiter $$
+create procedure spInsertClientePJ(vNomeCli varchar(200), vNumEnd decimal(6,0), vCompEnd varchar(50), vCEP decimal(8,0), vCNPJ decimal(14,0) ,vIE decimal(11,0), vId int)
+begin
+    if 
+		not exists (select * from tbCliente where NomeCli= vNomeCli) then
+		insert into tbCliente(NomeCli, NumEnd, CompEnd, CepCli)
+		values(vNomeCli, vNumEnd, vCompEnd,(select CEP from tbEndereco where CEP = vCEP));
+	end if;
+	
+    if
+		not exists (select * from tbClientePJ where CNPJ = vCNPJ) then
+        insert into tbClientePJ(CNPJ, IE, Id)
+        values(vCNPJ, vIE, vId);
+	end if;
+end $$    
+
+alter table tbClientePJ modify column CNPJ decimal(14,0);
+call spInsertClientePJ('Paganada', 159, null, 12345051, 12345678912345, 98765432198, 1);
+call spInsertClientePJ('Caloteando', 69, null, 12345053,12345678912346, 98765432199, 2);
+call spInsertClientePJ('Semgrana', 189, null, 12345060, 12345678912347, 98765432100, 3);
+call spInsertClientePJ('Cemreais', 5024, 'Sala 23', 12345060, 12345678912348, 98765432101, 4);
+call spInsertClientePJ('Durango', 1254, null, 12345060, 12345678912349, 98765432102, 5);
+
+select * from tbClientePJ;
+select * from tbCliente;
+
+#Exercicio 9
+delimiter $$
+create procedure spInsertCompras(vNotaFiscal int, vNome varchar (200), vDataCompra date, vCodigoBarras decimal (14,0), vValorItem decimal (8,2), vQtd int, vQtdTotal int, vValorTotal decimal(8,2)) 
+begin
+    if not exists (select * from tbFornecedor where Nome = vNome) then
+        insert into tbFornecedor (Nome) values (vNome);
+        set vNome = (select Nome from tbfornecedor where Nome= vNome);
+        else
+        select Nome into vNome from tbfornecedor where Nome = vNome;
+    end if;
+
+    if not exists (select * from tbCompra where NotaFiscal = vNotaFiscal) then
+        insert into tbCompra (NotaFiscal, DataCompra, ValorTotal, QtdTotal) values (vNotaFiscal, vDataCompra, vValorTotal, vQtdTotal);
+        set vNotaFiscal = (select NotaFiscal from tbCompra where NotaFiscal= vNotaFiscal);
+        else
+        select NotaFiscal into vNotaFiscal from tbCompra where NotaFiscal = vNotaFiscal;
+    end if;
+
+    if not exists (select * from tbItem_Compra where CodigoBarras = vCodigoBarras) then
+        insert into tbItem_Compra (NotaFiscal, CodigoBarras, ValorItem, Qtd) values (vNotaFiscal, vCodigoBarras, vValorItem, vQtd);
+			set vCodigoBarras = (select CodigoBarras from tbItem_Compra where CodigoBarras= vCodigoBarras);
+				else 
+				select CodigoBarras into vCodigoBarras from tbItem_Compra where CodigoBarras = vCodigoBarras;
+	end if;
+end $$
+
+call spInsertCompras(8459, 'Amoroso e Doce',STR_TO_DATE("01,05,2018","%d,%m,%Y"),12345678910111, 22.22, 200, 700, 21944.00);
+call spInsertCompras(2482, 'Revenda Chico Loco',STR_TO_DATE("22,04,2020","%d,%m,%Y"),12345678910112, 40.50, 180, 180,  7290.00 );
+call spInsertCompras(21563, 'Marcelo Dedal',STR_TO_DATE("12,07,2020","%d,%m,%Y"), 12345678910113,  3.00, 300, 300, 900.00);
+call spInsertCompras(8459, 'Amoroso e Doce',STR_TO_DATE("04,12,2020","%d,%m,%Y"), 12345678910114,  35.00, 500, 700, 21944.00);
+call spInsertCompras(156354 , 'Revenda Chico Loco',STR_TO_DATE("23,11,2021","%d,%m,%Y"), 12345678910115,  54.00, 350, 350, 18900.00);
 ```

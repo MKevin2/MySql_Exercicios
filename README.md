@@ -381,7 +381,6 @@ create table tbCompra(
     Codigo int null
 );
 
-#criar ainda
 create table tbItemCompra(
 	NotaFiscal int not null,
     CodigoBarras decimal(14,0) not null,
@@ -568,7 +567,6 @@ end &&
 
 call spInsertClienteEx7('Pimpão', 325, null, 12345051);
 call spInsertClientePFEx7(12345678911, 12345678, 0, '2000-10-12', 1);
-select * from tbClientePF;
 
 call spInsertClienteEx7('Disney Chaplin', 89, 'Ap. 12', 12345053);
 call spInsertClientePFEx7(12345678912, 12345679, 0, '2001-11-21', 2);
@@ -592,14 +590,12 @@ call spInsertEnderecooo('Rua dos Amores', 'Sei Lá', 'Recife', 'PE', 12345060);
 delimiter $$
 create procedure spInsertClientePJ(vNomeCli varchar(200), vNumEnd decimal(6,0), vCompEnd varchar(50), vCEP decimal(8,0), vCNPJ decimal(14,0) ,vIE decimal(11,0), vId int)
 begin
-    if 
-		not exists (select * from tbCliente where NomeCli= vNomeCli) then
+    if not exists (select * from tbCliente where NomeCli= vNomeCli) then
 		insert into tbCliente(NomeCli, NumEnd, CompEnd, CepCli)
 		values(vNomeCli, vNumEnd, vCompEnd,(select CEP from tbEndereco where CEP = vCEP));
 	end if;
 	
-    if
-		not exists (select * from tbClientePJ where CNPJ = vCNPJ) then
+    if not exists (select * from tbClientePJ where CNPJ = vCNPJ) then
         insert into tbClientePJ(CNPJ, IE, Id)
         values(vCNPJ, vIE, vId);
 	end if;
@@ -617,33 +613,52 @@ select * from tbCliente;
 
 #Exercicio 9
 delimiter $$
-create procedure spInsertCompras(vNotaFiscal int, vNome varchar (200), vDataCompra date, vCodigoBarras decimal (14,0), vValorItem decimal (8,2), vQtd int, vQtdTotal int, vValorTotal decimal(8,2)) 
+create procedure spInsertCompra(vNotaFiscal int, vNome varchar (200), vDataCompra date, vCodigoBarras decimal (14,0), vValorItem decimal (8,2), vQtd int, vQtdCompra int, vValorTotal decimal(8,2)) 
 begin
     if not exists (select * from tbFornecedor where Nome = vNome) then
         insert into tbFornecedor (Nome) values (vNome);
         set vNome = (select Nome from tbfornecedor where Nome= vNome);
-        else
+	else
         select Nome into vNome from tbfornecedor where Nome = vNome;
     end if;
 
     if not exists (select * from tbCompra where NotaFiscal = vNotaFiscal) then
-        insert into tbCompra (NotaFiscal, DataCompra, ValorTotal, QtdTotal) values (vNotaFiscal, vDataCompra, vValorTotal, vQtdTotal);
+        insert into tbCompra (NotaFiscal, DataCompra, ValorTotal, QtdCompra) values (vNotaFiscal, vDataCompra, vValorTotal, vQtdCompra);
         set vNotaFiscal = (select NotaFiscal from tbCompra where NotaFiscal= vNotaFiscal);
-        else
+	else
         select NotaFiscal into vNotaFiscal from tbCompra where NotaFiscal = vNotaFiscal;
     end if;
-
-    if not exists (select * from tbItem_Compra where CodigoBarras = vCodigoBarras) then
-        insert into tbItem_Compra (NotaFiscal, CodigoBarras, ValorItem, Qtd) values (vNotaFiscal, vCodigoBarras, vValorItem, vQtd);
-			set vCodigoBarras = (select CodigoBarras from tbItem_Compra where CodigoBarras= vCodigoBarras);
-				else 
-				select CodigoBarras into vCodigoBarras from tbItem_Compra where CodigoBarras = vCodigoBarras;
+	select * from tbCompra;
+    if not exists (select * from tbItemCompra where CodigoBarras = vCodigoBarras) then
+        insert into tbItemCompra (NotaFiscal, CodigoBarras, ValorItem, Qtd) values (vNotaFiscal, vCodigoBarras, vValorItem, vQtd);
+		set vCodigoBarras = (select CodigoBarras from tbItemCompra where CodigoBarras= vCodigoBarras);
+	else 
+		select CodigoBarras into vCodigoBarras from tbItemCompra where CodigoBarras = vCodigoBarras;
 	end if;
 end $$
+select * from tbFornecedor;
+call spInsertCompra(8459, 'Amoroso e Doce',STR_TO_DATE("01,05,2018","%d,%m,%Y"),12345678910111, 22.22, 200, 700, 21944.00);
+call spInsertCompra(2482, 'Revenda Chico Loco',STR_TO_DATE("22,04,2020","%d,%m,%Y"),12345678910112, 40.50, 180, 180,  7290.00 );
+call spInsertCompra(21563, 'Marcelo Dedal',STR_TO_DATE("12,07,2020","%d,%m,%Y"), 12345678910113,  3.00, 300, 300, 900.00);
+call spInsertCompra(8459, 'Amoroso e Doce',STR_TO_DATE("04,12,2020","%d,%m,%Y"), 12345678910114,  35.00, 500, 700, 21944.00);
+call spInsertCompra(156354 , 'Revenda Chico Loco',STR_TO_DATE("23,11,2021","%d,%m,%Y"), 12345678910115,  54.00, 350, 350, 18900.00);
 
-call spInsertCompras(8459, 'Amoroso e Doce',STR_TO_DATE("01,05,2018","%d,%m,%Y"),12345678910111, 22.22, 200, 700, 21944.00);
-call spInsertCompras(2482, 'Revenda Chico Loco',STR_TO_DATE("22,04,2020","%d,%m,%Y"),12345678910112, 40.50, 180, 180,  7290.00 );
-call spInsertCompras(21563, 'Marcelo Dedal',STR_TO_DATE("12,07,2020","%d,%m,%Y"), 12345678910113,  3.00, 300, 300, 900.00);
-call spInsertCompras(8459, 'Amoroso e Doce',STR_TO_DATE("04,12,2020","%d,%m,%Y"), 12345678910114,  35.00, 500, 700, 21944.00);
-call spInsertCompras(156354 , 'Revenda Chico Loco',STR_TO_DATE("23,11,2021","%d,%m,%Y"), 12345678910115,  54.00, 350, 350, 18900.00);
+select * from tbCompra
+
+
+#Exercicio 10
+delimiter &&
+create procedure spVendaEx10(vNumeroVenda int, vDataVenda date, vTotalVenda decimal(8,2), vNomeCli varchar(200), vQtd int, vValorItem decimal(8,2), vCodigoBarras decimal (14,0))
+begin
+	if exists (select * from tbCliente where NomeCli = vNomeCli) then
+	insert into tbVenda(NumeroVenda, DataVenda, TotalVenda) values (vNumeroVenda, vDataVenda, vTotalVenda);
+end if;
+
+ if exists (select * from tbItem_Venda where CodigoBarras = vCodigoBarras) then
+  insert into tbItemVenda(Qtd, ValorItem, CodigoBarras) values (vQtd, vValorItem, vCodigoBarras);
+  set vCodigoBarras = (select CodigoBarras from tbItem_Venda where CodigoBarras = vCodigoBarras);
+end if;
+end &&
+
+call spVendaEx10("Pimpão", 1, '2000-01-01', 54.61, 1, 54.61, 12345678910111)
 ```

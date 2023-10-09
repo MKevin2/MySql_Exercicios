@@ -453,8 +453,10 @@ select * from tbFornecedor;
 delimiter $$
 create procedure spInsertCity (vCidade varchar(200))
 begin
-insert into tbCidade(Cidade)
-			  values(vCidade);
+	if not exists(select Cidade from tbCidade where Cidade = vCidade) then
+		insert into tbCidade(Cidade)
+		values(vCidade);
+	end if;
 end $$
 
 call spInsertCity ('Rio de Janeiro');
@@ -471,9 +473,10 @@ select * from tbCidade;
 delimiter $$
 create procedure spInsertUf (vUF char(2))
 begin
-	insert into tbEstado(UF)
-				 values(vUF);
-
+	if not exists (select UF from tbEstado where UF = vUF) then
+		insert into tbEstado(UF)
+		values(vUF);
+	end if;
 end $$
 
 call spInsertUf ('SP');
@@ -485,8 +488,10 @@ select * from tbEstado;
 delimiter $$
 create procedure spInsertBairro (vBairro varchar(200))
 begin
-	insert into tbBairro(Bairro)
-				 values(vBairro);
+	if not exists (select Bairro from tbBairro where Bairro = vBairro) then
+		insert into tbBairro(Bairro)
+		values(vBairro);
+	end if;
 end $$
 
 call spInsertBairro ('Aclimação');
@@ -500,8 +505,10 @@ select * from tbBairro;
 delimiter $$
 create procedure spInsertProduto (vCB decimal(14,0), vNome varchar(200), vValor decimal(8,2), vQtd int)
 begin
-	insert into tbProduto(CodigoBarras, Nome, Valor, Qtd)
-                          values(vCB,vNome, vValor, vQtd);
+	if not exists (select CodigoBarras from tbProduto where CodigoBarras = vCB) then
+		insert into tbProduto(CodigoBarras, Nome, Valor, Qtd)
+		values(vCB,vNome, vValor, vQtd);
+	end if;
 end $$
 
 call spInsertProduto ('12345678910111', 'Rei do Papel Mache', '54.61', 120 );
